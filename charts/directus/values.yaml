@@ -97,6 +97,8 @@ service:
   port: 80
   # -- Service annotations. Usually used in cloud environments
   annotations: {}
+  loadBalancerIP: ""
+  externalTrafficPolicy: ""
 
 ingress:
   enabled: false
@@ -179,7 +181,7 @@ applicationSecretName: "directus-application-secret"
 # Please disable installations for other database engines in this chart.
 # Please note if you use mariadb server, set `databaseEngine` to `mysql` value.
 # Details are here - https://directus.io/docs/configuration/database.
-databaseEngine: "mysql"
+databaseEngine: "postgresql"
 
 # -- Create PostgreSQL secret in Directus chart
 # If set to enable, postgresql secret with values of `postgres-password`, `password`, and `replication-password` variables will be created.
@@ -191,7 +193,7 @@ createPostgresqlSecret: false
 # If set to enable, mysql secret with values of `mysql-root-password`, `mysql-replication-password` and `mysql-password` variables will be created.
 # Please consult the official bitnami mysql values file - https://github.com/bitnami/charts/blob/main/bitnami/mysql/values.yaml#L152.
 # If set to false, you MUST create a secret resource in k8s for mysql installation and set the correct value to the `existingSecret` in the mysql settings section.
-createMysqlSecret: true
+createMysqlSecret: false
 
 mysql:
   # -- Global security settings for mysql image. Set to true to allow insecure images from bitnamilegacy repository
@@ -206,9 +208,9 @@ mysql:
   # -- The switch to switch off the installation of the mysql.
   # The rest of the settings are being used during the installation and for DB connection.
   # Link to the values.yaml file in bitnami repo - https://github.com/bitnami/charts/blob/main/bitnami/mysql/values.yaml
-  enableInstallation: true
+  enableInstallation: false
   auth:
-    existingSecret: "directus-mysql-secret"
+    existingSecret: ""
     database: "directus_mysql"
     username: "directus_mysql"
   # If you want to use your own mysql or mariadb insance, please provide the URL to the existing instance in `mysqlURL`.
@@ -233,9 +235,7 @@ postgresql:
   # Link to the values.yaml file in bitnami repo - https://github.com/bitnami/charts/blob/main/bitnami/postgresql/values.yaml
   enableInstallation: false
   auth:
-    existingSecret: "directus-postgresql-secret"
-    database: "directus_postgres"
-    username: "directus_postgres"
+    existingSecret: ""
   # If you want to use your own postgresql, please provide the URL to the existing instance in `postgresqlURL`.
   # Otherwise leave it empty to use postgresql server that being installed in the cluster with this chart.
   # Please note postgresql.auth.database will be used as a name of the database
@@ -255,8 +255,24 @@ redis:
     tag: 8.2.1-debian-12-r0
   # -- Switch to enable Redis
   enabled: true
-  auth:
+  # -- Switch to enable internal Redis installation (bitnami/redis chart)
+  # Set to false when using external Redis
+  enableInstallation: false
+  # -- External Redis configuration
+  # When using external Redis, provide the connection details here
+  external:
+    # -- External Redis host
+    host: ""
+    # -- External Redis port
+    port: "6379"
+    # -- External Redis username (default for most Redis instances)
+    username: "default"
     # -- Existing secret name with Redis password
+    existingSecret: ""
+    # -- The key in the secret with password
+    existingSecretPasswordKey: "redis-password"
+  auth:
+    # -- Existing secret name with Redis password (for internal Redis)
     existingSecret: ""
     # -- The key in the secret with password
     existingSecretPasswordKey: ""

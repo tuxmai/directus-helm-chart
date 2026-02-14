@@ -1,0 +1,91 @@
+# Production values for Directus
+replicaCount: 1
+
+image:
+  repository: directus/directus
+  pullPolicy: IfNotPresent
+  tag: ""
+
+service:
+  type: ClusterIP
+  port: 80
+  annotations: {}
+  loadBalancerIP: ""  # Set via helmfile if using LoadBalancer
+  externalTrafficPolicy: ""
+
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+  hosts:
+    - host: directus.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: directus-tls
+  #    hosts:
+  #      - directus.example.com
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 2Gi
+  requests:
+    cpu: 100m
+    memory: 512Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+# Database configuration
+databaseEngine: "postgresql"
+postgresql:
+  enableInstallation: false
+  postgresqlURL: {{ env "POSTGRES_HOST" | default "" | quote }}
+  postgresqlPort: {{ env "POSTGRES_PORT" | default "5432" | quote }}
+  auth:
+    database: {{ env "POSTGRES_DB" | default "directus" | quote }}
+    username: {{ env "POSTGRES_USER" | default "directus" | quote }}
+
+# Redis configuration
+redis:
+  enabled: true
+  enableInstallation: false
+  external:
+    host: {{ env "REDIS_HOST" | default "redis-master.redis.svc.cluster.local" | quote }}
+  replica:
+    replicaCount: 0
+
+# Security
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 1000
+  allowPrivilegeEscalation: false
+
+livenessProbe:
+  httpGet:
+    path: /server/health
+    port: 8055
+  initialDelaySeconds: 60
+  periodSeconds: 10
+  failureThreshold: 10
+  timeoutSeconds: 3
+
+readinessProbe:
+  httpGet:
+    path: /server/health
+    port: 8055
+  initialDelaySeconds: 30
+  periodSeconds: 5
+  failureThreshold: 10
+  timeoutSeconds: 3

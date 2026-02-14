@@ -1,0 +1,41 @@
+releases:
+  - name: directus
+    namespace: directus
+    chart: ./charts/directus
+    values:
+      - envs/prod/values.yaml.gotmpl
+      - envs/prod/secrets.yaml.gotmpl
+    set:
+      # Service Configuration
+      - name: service.type
+        value: {{ env "DIRECTUS_SERVICE_TYPE" | default "LoadBalancer" | quote }}
+      - name: service.loadBalancerIP
+        value: {{ env "DIRECTUS_LB_IP" | default "" | quote }}
+      - name: service.externalTrafficPolicy
+        value: ""
+      
+      # Image Configuration
+      - name: image.tag
+        value: ""
+      - name: image.pullPolicy
+        value: IfNotPresent
+      
+      # Replica Count
+      - name: replicaCount
+        value: 1
+
+      # Disable internal secret creation (using env vars instead)
+      - name: createApplicationSecret
+        value: false
+
+      # Database Configuration (External PostgreSQL)
+      - name: databaseEngine
+        value: postgresql
+      - name: postgresql.enableInstallation
+        value: false
+
+      # Redis Configuration (External Redis)
+      - name: redis.enabled
+        value: true
+      - name: redis.enableInstallation
+        value: false
