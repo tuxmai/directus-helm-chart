@@ -120,7 +120,11 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
-extraEnvVars: []
+extraEnvVars:
+  - name: CORS_ENABLED
+    value: "true"
+  - name: CORS_ORIGIN
+    value: "true"
 
 attachExistingSecrets: []
   # - existingSecretInKubernetes
