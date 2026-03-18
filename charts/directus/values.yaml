@@ -125,6 +125,8 @@ extraEnvVars:
     value: "true"
   - name: CORS_ORIGIN
     value: "true"
+  - name: PUBLIC_URL
+    value: "https://d.sz9wang.com"
 
 attachExistingSecrets: []
   # - existingSecretInKubernetes
